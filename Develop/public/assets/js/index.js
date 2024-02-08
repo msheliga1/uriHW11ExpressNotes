@@ -1,3 +1,4 @@
+// URI bootcamp class - HW 11 Due 2.8.24 MJS - Original code from shared URI repo.
 let noteForm;
 let noteTitle;
 let noteText;
