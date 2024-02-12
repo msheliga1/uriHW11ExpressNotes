@@ -1,0 +1,15 @@
+{
+  "name": "urihw11expressnotes",
+  "version": "1.0.0",
+  "description": "uri bootcamp HW 11 OOP Express Note Taker with Routes and Heroku Deployment - MJS Due 2.8.24\r Michael Sheliga - This repo is for the University of Richmond (URI) coding bootcamp.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

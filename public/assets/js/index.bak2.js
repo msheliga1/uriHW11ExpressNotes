@@ -6,7 +6,60 @@ let saveNoteBtn;
 let newNoteBtn;
 let noteList;
 
-if (window.location.pathname === '/notes') {
+const baseURL = "file:///C:/Users/Mike/Desktop/URIClass/hw11/uriHW11ExpressNotes"; 
+
+  // MJUS 2.8.24 - to turn on/off all logging
+  const log = (text) => {
+    console.log("MJS " + text);
+  };
+
+  // determine if you are in the server or in a browser
+  const inBrowser = ( ) => {
+    // First see if the window exists ... needed for server.js require method.
+    // if (!window) {  // Does NOT work
+    // if (window instanceof Window) {  // Does not work
+    if (typeof window !== 'undefined') {
+      return true;
+    }
+    return false;
+  };  // end inBrowser
+
+  // determine if you are in a browser at the indicated filename (ie. notes.html )
+  const inBrowserFile = (fileName ) => {
+      // First see if the window exists ... needed for server.js require method.
+      // if (!window) {  // Does NOT work
+      // if (window instanceof Window) {  // Does not work
+      if (!inBrowser()) {
+        return false;
+      }
+      const wlp = window.location.pathname;
+      log("wind.loc.pname is " + wlp + " notes.html len/indOf " + wlp.length + "/" + wlp.indexOf(fileName));
+      // window.location.pathname returns the full path for me, ie. C:/...Develop/public/notes.html
+      // if (window.location.pathnamew === '/notes') {      
+      if (wlp.lastIndexOf(fileName) === wlp.length - 10 ) {
+        return true;  
+      }
+      return false;
+  };  // end inBrowserFile(fileName)
+
+log("Starting index.js");
+if (inBrowser()) {
+  console.log("Window defined.");
+} else {
+  log("Window not defined");
+}
+
+// this returns the full path for me, ie. C:/...Develop/public/notes.html
+if (inBrowserFile('notes.html')) {
+  console.log("In notes.html.");
+} else {
+  log("Not in notes.html");
+}
+
+// if (window.location.pathname === '/notes') {  // window undefined when loading server.js
+// and pathname includes full path and file on my Windows 10 system
+if (inBrowserFile('notes.html')) {
+console.log("Index.js pathname ends in notes.html");
   noteForm = document.querySelector('.note-form');
   noteTitle = document.querySelector('.note-title');
   noteText = document.querySelector('.note-textarea');
@@ -29,18 +82,30 @@ const hide = (elem) => {
 // activeNote is used to keep track of the note in the textarea
 let activeNote = {};
 
-const getNotes = () =>
-  fetch('/api/notes', {
+const getNotes = () => {
+  console.log("In getNotes");
+  // URL parse err on this line - stack overflow claims need full path when not in browser. 
+  // fetch('/api/notes', {
+  // In the sample repo data is in Develop/db/db.json, while this index.js is in Develop/public/assets/js
+  // fetch('/Develop/db/db.json', { // FAILS TypeError: Invalid URL
+  //   fetch('./../../../db/db.json', { // FAILS - Type Error: Invalid URL
+    // fetch(baseURL + 'Develop/db/db.json', { // FAILS, but fetch fails unknown scheme error, not Invalid URL. 
+  // fetch(baseURL + 'Develop/db/db.json', { // FAILS, but not implemented yet error if file:///C... in baseURL
+  fetch('/api/notes', {   // think I need this exact same path in server.js
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'
     }
-  });
+  })  // end fetch()
+  .then((res) => log("Done Running getNotes"));
+}; // end getNotes
 
 const saveNote = (note) =>
   fetch('/api/notes', {
     method: 'POST',
     headers: {
+
+
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(note)
@@ -164,7 +229,7 @@ const renderNoteList = async (notes) => {
     }
 
     return liEl;
-  };
+  }; // end CreateLi inner function
 
   if (jsonNotes.length === 0) {
     noteListItems.push(createLi('No saved Notes', false));
@@ -173,23 +238,33 @@ const renderNoteList = async (notes) => {
   jsonNotes.forEach((note) => {
     const li = createLi(note.title);
     li.dataset.note = JSON.stringify(note);
-
     noteListItems.push(li);
   });
 
-  if (window.location.pathname === '/notes') {
+  // if (window.location.pathname === '/notes') {
+  if (inBrowserFile('notes.html')) {
     noteListItems.forEach((note) => noteList[0].append(note));
   }
-};
+}; // end function renderNoteList
 
 // Gets notes from the db and renders them to the sidebar
-const getAndRenderNotes = () => getNotes().then(renderNoteList);
+// This also did not originally compile
+const getAndRenderNotes = () => {
+  getNotes(); 
+  // .then(renderNoteList);
+}; // end function getAndRenderNotes
 
-if (window.location.pathname === '/notes') {
+// BEGIN EXCUTING CODE 
+// ======================
+// if (window.location.pathname === '/notes') {  // add event listeners
+// above wont work since window not defined (and pathname includes full path and filename)
+if (inBrowserFile('notes.html')) {
   saveNoteBtn.addEventListener('click', handleNoteSave);
   newNoteBtn.addEventListener('click', handleNewNoteView);
   clearBtn.addEventListener('click', renderActiveNote);
   noteForm.addEventListener('input', handleRenderBtns);
 }
 
+log("Index.js calling getAndRenderNotes");
 getAndRenderNotes();
+log("Index.js returned from getAndrenderNotes");
