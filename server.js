@@ -1,10 +1,13 @@
 // MJS 2.8.24 - HW 11 Express Note Taker - Started From Miniproject server.js
 // I put this M##D8*()(E file in the same relative directory as Example 17, which is the dir with README.md.
 // This mandates adding Develop to the paths below. MJS 1:27
+// Got rid of Develop folder per instructor. 
 console.log("HW11: starting server.js");
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+// for id, npm install uuid...
+const uuid = require('./public/assets/js/uuid'); // for primary key
 // const { clog } = require('./middleware/clog');
 console.log("HW11: requiring index.js");
 // const api = require('./Develop/public/assets/js/index.js');
@@ -36,6 +39,12 @@ app.get('/notes', (req, res) =>
   res.sendFile(path.join(__dirname, '/public/notes.html'))
 );
 
+// Very simple get route ... to log among other things. 
+// app.get('/notes', (req, res) => {
+//   console.log("GET endpoint /notes ... returning notes.html file.");
+//   res.sendFile(path.join(__dirname, 'public/notes.html'))
+// });
+
 // GET Route for db.json - This is for the back end
 app.get('/api/notes', (req, res) =>  {
   fs.readFile('db/db.json', "utf-8", (err, data) =>  {
@@ -52,9 +61,9 @@ app.get('/api/notes', (req, res) =>  {
 app.post('/api/notes', (req, res) => {
   const fileName = 'db/db.json';
   // Step 1: pull a notes object out of the input req
-  const newNote = req.body; 
-  console.log("The new note is " + newNote); // [object Object]
-  const {title, text} = newNote;
+  console.log("The new note is " + req.body); // [object Object]
+  const {title, text} = req.body;
+  const newNote = {title, text, id: uuid()};
   console.log("New title " + title + "  New Text " + text);  // works great!
   // let noteArray = [];
   // Step 2 use the current data to create an array of current notes
@@ -73,7 +82,7 @@ app.post('/api/notes', (req, res) => {
     noteArray.push(newNote);
     let count = 1;
     for (const note of noteArray) {
-        console.log(count++ + ". Note Title: " + note.title + " Text: " + note.text);
+        console.log(count++ + ". " + note.id + " Note Title: " + note.title + " Text: " + note.text);
     }
     // Step 4: Now write all the data (new plus old) back to the file. 
     // stringify(obj, null, 4) ?? 
@@ -83,7 +92,7 @@ app.post('/api/notes', (req, res) => {
   }) ; // end readFile method
   const resp = {
     status: "Sucessfully added",  // can be any text
-    body: noteArray,  // works with noteArray or with newNote!
+    body: noteArray,  // works with noteArray or with newNote, but directions say return them all
   };
   console.log(resp);
   // make the final resoult 201 (created success)
@@ -91,23 +100,15 @@ app.post('/api/notes', (req, res) => {
 
 }); // end app.post method
 
-
-
-// Very simple get route ... to log among other things. 
-app.get('/MJS', (req, res) => {
-  console.log("Found path MJS");
-  res.sendFile(path.join(__dirname, 'Develop/db/db.json'))
-}
-);
-
 // GET Route for feedback page
 app.get('/feedback', (req, res) =>
   res.sendFile(path.join(__dirname, '/public/pages/feedback.html'))
 );
 
-// Wildcard route to direct users to a 404 page
+// Per directon Wildcard route to return index.html
+// This causes all kind of havoc if it's not last!!
 app.get('*', (req, res) =>
-  res.sendFile(path.join(__dirname, 'public/pages/404.html'))
+  res.sendFile(path.join(__dirname, '/public/index.html'))
 );
 
 app.listen(PORT, () =>
